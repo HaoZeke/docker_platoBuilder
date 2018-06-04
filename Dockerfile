@@ -26,7 +26,7 @@ zlib1g-dev libjpeg8-dev libjbig2dec0-dev \
 gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
 # Additional build deps
 texinfo libtool m4 build-essential \
-gettext ccache git sudo
+gettext ccache git sudo pkg-config
 
 # Clean up APT when done. [Phusion]
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
