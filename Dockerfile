@@ -99,9 +99,8 @@ RUN echo $'transfer() { if [ $# -eq 0 ]; then echo -e "No arguments specified. U
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 
-# Get sources and toolchains
+# Get tool-chains
 RUN rustup target add arm-unknown-linux-gnueabihf
-RUN git clone https://github.com/baskerville/plato ~/Git/Github/eReaders/plato
 
 # Setup cargo
 RUN mkdir -p ~/.cargo && touch ~/.cargo/config
