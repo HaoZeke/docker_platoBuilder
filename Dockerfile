@@ -1,5 +1,5 @@
 # Use the the recommended version [from https://github.com/baskerville/plato/blob/master/doc/BUILD.md]
-FROM saltstack/ubuntu-12.04-minimal
+FROM ubuntu:precise
 
 # By Rohit Goswami
 LABEL maintainer="Rohit Goswami <rohit.1995@mail.ru>"
