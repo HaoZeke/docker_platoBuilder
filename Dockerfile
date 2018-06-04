@@ -33,6 +33,13 @@ gettext ccache git sudo
 # Clean up APT when done. [Phusion]
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Add rust for everyone
+ENV RUSTUP_HOME=/rust
+ENV CARGO_HOME=/cargo 
+ENV PATH=/cargo/bin:/rust/bin:$PATH
+
+RUN echo "(curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly --no-modify-path) && rustup default nightly" > /install-rust.sh && chmod 755 /install-rust.sh
+
 # Add the build user, update password to build and add to sudo group
 ENV USER build
 RUN useradd --create-home ${USER} && echo "${USER}:${USER}" | chpasswd && adduser ${USER} sudo
@@ -69,10 +76,10 @@ RUN git config --global user.name "${USER}" && git config --global user.email "$
 RUN echo 'transfer() { if [ $# -eq 0 ]; then echo -e "No arguments specified. Usage:\necho transfer /tmp/test.md\ncat /tmp/test.md | transfer test.md"; return 1; fi tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g'); curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile; else curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile ; fi; cat $tmpfile; rm -f $tmpfile; }' >> ~/.bashrc
 
 # Get rust (from https://github.com/rust-lang-deprecated/rustup.sh/issues/83)
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-ENV PATH "/root/.cargo/bin:$PATH"
-ENV PATH "$HOME/.cargo/bin:$PATH"
-RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
+# RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+# ENV PATH "/root/.cargo/bin:$PATH"
+# ENV PATH "$HOME/.cargo/bin:$PATH"
+# RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 RUN rustup target add arm-unknown-linux-gnueabihf
 
 # Get Sources
