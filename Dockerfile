@@ -11,13 +11,16 @@ ENV DEBIAN_FRONTEND noninteractive
 # Suppress policy restart errors [from https://forums.docker.com/t/error-in-docker-image-creation-invoke-rc-d-policy-rc-d-denied-execution-of-restart-start/880]
 RUN echo exit 0 > /usr/sbin/policy-rc.d
 
+# Add a clean step to every run [from https://medium.com/unbabel-dev/the-need-for-speed-optimizing-dockerfiles-at-unbabel-70102f6d6745]
+# The clean step is from Phusion
+
 # Grab faster mirrors [from https://linuxconfig.org/how-to-select-the-fastest-apt-mirror-on-ubuntu-linux]
-RUN apt-get update && apt-get install --yes wget
-RUN wget http://ftp.au.debian.org/debian/pool/main/n/netselect/netselect_0.3.ds1-26_amd64.deb
-RUN dpkg -i netselect_0.3.ds1-26_amd64.deb
-RUN rm -rf netselect_*
-RUN netselect -s 20 -t 40 $(wget -qO - mirrors.ubuntu.com/mirrors.txt)
-RUN sed -i 's/http:\/\/us.archive.ubuntu.com\/ubuntu\//http:\/\/ubuntu.uberglobalmirror.com\/archive\//' /etc/apt/sources.list
+RUN apt-get update && apt-get install --yes wget; \
+wget http://ftp.au.debian.org/debian/pool/main/n/netselect/netselect_0.3.ds1-26_amd64.deb; \
+dpkg -i netselect_0.3.ds1-26_amd64.deb; \
+rm -rf netselect_*; \
+netselect -s 20 -t 40 $(wget -qO - mirrors.ubuntu.com/mirrors.txt); \
+sed -i 's/http:\/\/us.archive.ubuntu.com\/ubuntu\//http:\/\/ubuntu.uberglobalmirror.com\/archive\//' /etc/apt/sources.list; apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Update apt and get build reqs [from https://github.com/koreader/koreader]
 RUN apt-get update && apt-get install --yes \
@@ -26,10 +29,8 @@ zlib1g-dev libjpeg8-dev libjbig2dec0-dev \
 gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
 # Additional build deps
 texinfo libtool m4 build-essential \
-gettext ccache git sudo pkg-config
-
-# Clean up APT when done. [Phusion]
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+gettext ccache git sudo pkg-config; \
+apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Horrible hack to get rustup [from https://github.com/rust-lang-nursery/docker-rust/blob/master/1.26.1/jessie/Dockerfile]
 ENV RUSTUP_HOME=/usr/local/rustup \
@@ -103,5 +104,5 @@ RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 RUN rustup target add arm-unknown-linux-gnueabihf
 
 # Setup cargo
-RUN mkdir -p ~/.cargo && touch ~/.cargo/config
-RUN echo $'[target.arm-unknown-linux-gnueabihf]\nlinker = "arm-linux-gnueabihf-gcc"\nrustflags = ["-C", "target-feature=+v7,+vfp3,+a9,+neon"]' >> ~/.cargo/config
+RUN mkdir -p ~/.cargo && touch ~/.cargo/config; \
+echo $'[target.arm-unknown-linux-gnueabihf]\nlinker = "arm-linux-gnueabihf-gcc"\nrustflags = ["-C", "target-feature=+v7,+vfp3,+a9,+neon"]' >> ~/.cargo/config
