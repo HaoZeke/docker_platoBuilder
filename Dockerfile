@@ -23,22 +23,42 @@ RUN sed -i 's/http:\/\/us.archive.ubuntu.com\/ubuntu\//http:\/\/ubuntu.ubergloba
 RUN apt-get update && apt-get install --yes \
 curl libtool automake cmake ragel \
 zlib1g-dev libjpeg8-dev libjbig2dec0-dev \
-gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
-
+gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
 # Additional build deps
-RUN apt-get update && apt-get install -y \
 texinfo libtool m4 \
 gettext ccache git sudo
 
 # Clean up APT when done. [Phusion]
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Add rust for everyone
-ENV RUSTUP_HOME=/rust
-ENV CARGO_HOME=/cargo 
-ENV PATH=/cargo/bin:/rust/bin:$PATH
+# Horrible hack to get rustup [from https://github.com/rust-lang-nursery/docker-rust/blob/master/1.26.1/jessie/Dockerfile]
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH \
+    RUST_VERSION=1.26.1
 
-RUN echo "(curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly --no-modify-path) && rustup default nightly" > /install-rust.sh && chmod 755 /install-rust.sh
+RUN set -eux; \
+    \
+# this "case" statement is generated via "update.sh"
+    dpkgArch="$(dpkg --print-architecture)"; \
+    case "${dpkgArch##*-}" in \
+        amd64) rustArch='x86_64-unknown-linux-gnu'; rustupSha256='c9837990bce0faab4f6f52604311a19bb8d2cde989bea6a7b605c8e526db6f02' ;; \
+        armhf) rustArch='armv7-unknown-linux-gnueabihf'; rustupSha256='297661e121048db3906f8c964999f765b4f6848632c0c2cfb6a1e93d99440732' ;; \
+        arm64) rustArch='aarch64-unknown-linux-gnu'; rustupSha256='a68ac2d400409f485cb22756f0b3217b95449884e1ea6fd9b70522b3c0a929b2' ;; \
+        i386) rustArch='i686-unknown-linux-gnu'; rustupSha256='27e6109c7b537b92a6c2d45ac941d959606ca26ec501d86085d651892a55d849' ;; \
+        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
+    esac; \
+    \
+    url="https://static.rust-lang.org/rustup/archive/1.11.0/${rustArch}/rustup-init"; \
+    wget "$url"; \
+    echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
+    chmod +x rustup-init; \
+    ./rustup-init -y --no-modify-path --default-toolchain $RUST_VERSION; \
+    rm rustup-init; \
+    chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
+    rustup --version; \
+    cargo --version; \
+    rustc --version;
 
 # Add the build user, update password to build and add to sudo group
 ENV USER build
@@ -76,10 +96,8 @@ RUN git config --global user.name "${USER}" && git config --global user.email "$
 RUN echo 'transfer() { if [ $# -eq 0 ]; then echo -e "No arguments specified. Usage:\necho transfer /tmp/test.md\ncat /tmp/test.md | transfer test.md"; return 1; fi tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g'); curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile; else curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile ; fi; cat $tmpfile; rm -f $tmpfile; }' >> ~/.bashrc
 
 # Get rust (from https://github.com/rust-lang-deprecated/rustup.sh/issues/83)
-# RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-# ENV PATH "/root/.cargo/bin:$PATH"
-# ENV PATH "$HOME/.cargo/bin:$PATH"
-# RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 RUN rustup target add arm-unknown-linux-gnueabihf
 
 # Get Sources
