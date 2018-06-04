@@ -98,7 +98,6 @@ echo $'tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "
 
 # Get rust (from https://github.com/rust-lang-deprecated/rustup.sh/issues/83)
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 
 # Get tool-chains
 RUN rustup target add arm-unknown-linux-gnueabihf
