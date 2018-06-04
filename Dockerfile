@@ -70,6 +70,8 @@ RUN echo 'transfer() { if [ $# -eq 0 ]; then echo -e "No arguments specified. Us
 
 # Get rust (from https://github.com/rust-lang-deprecated/rustup.sh/issues/83)
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH "/root/.cargo/bin:$PATH"
+ENV PATH "$HOME/.cargo/bin:$PATH"
 RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 RUN rustup target add arm-unknown-linux-gnueabihf
 
