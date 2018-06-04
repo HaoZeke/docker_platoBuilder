@@ -6,7 +6,7 @@ LABEL maintainer="Rohit Goswami <rohit.1995@mail.ru>"
 LABEL name="platoBot"
 
 # Suppress debconf errors [from https://github.com/phusion/baseimage-docker/issues/58]
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+ENV DEBIAN_FRONTEND noninteractive
 
 # Suppress policy restart errors [from https://forums.docker.com/t/error-in-docker-image-creation-invoke-rc-d-policy-rc-d-denied-execution-of-restart-start/880]
 RUN echo exit 0 > /usr/sbin/policy-rc.d
@@ -56,6 +56,9 @@ RUN sudo chown -R ${USER}:${USER} /home/${USER}
 
 USER ${USER}
 
+# Switch back to interactive shells
+ENV DEBIAN_FRONTEND teletype
+
 # Switch to bash
 SHELL ["/bin/bash", "-c"]
 
@@ -66,8 +69,8 @@ RUN git config --global user.name "${USER}" && git config --global user.email "$
 RUN echo 'transfer() { if [ $# -eq 0 ]; then echo -e "No arguments specified. Usage:\necho transfer /tmp/test.md\ncat /tmp/test.md | transfer test.md"; return 1; fi tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g'); curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile; else curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile ; fi; cat $tmpfile; rm -f $tmpfile; }' >> ~/.bashrc
 
 # Get rust (from https://github.com/rust-lang-deprecated/rustup.sh/issues/83)
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-ENV PATH $HOME/.cargo/bin:$PATH
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 RUN rustup target add arm-unknown-linux-gnueabihf
 
 # Get Sources
