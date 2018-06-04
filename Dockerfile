@@ -95,10 +95,14 @@ RUN git config --global user.name "${USER}" && git config --global user.email "$
 # Get a transfer.sh macro
 RUN echo 'transfer() { if [ $# -eq 0 ]; then echo -e "No arguments specified. Usage:\necho transfer /tmp/test.md\ncat /tmp/test.md | transfer test.md"; return 1; fi tmpfile=$( mktemp -t transferXXX ); if tty -s; then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g'); curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile; else curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile ; fi; cat $tmpfile; rm -f $tmpfile; }' >> ~/.bashrc
 
-# Get sources and requirements
+# Get rust (from https://github.com/rust-lang-deprecated/rustup.sh/issues/83)
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
+
+# Get sources and toolchains
 RUN rustup target add arm-unknown-linux-gnueabihf
 RUN git clone https://github.com/baskerville/plato ~/Git/Github/eReaders/plato
 
 # Setup cargo
-RUN touch ~/.cargo/config
+RUN mkdir -p ~/.cargo && touch ~/.cargo/config
 RUN echo $'[target.arm-unknown-linux-gnueabihf]\nlinker = "arm-linux-gnueabihf-gcc"\nrustflags = ["-C", "target-feature=+v7,+vfp3,+a9,+neon"]' >> ~/.cargo/config
