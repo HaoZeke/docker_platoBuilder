@@ -17,11 +17,10 @@ gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 # Additional build deps
 RUN apt-get install -y texinfo cmake libtool m4 automake \
 libicu-devel libpango1.0-dev libcairo-dev wget luarocks \
-gettext ccache
+gettext ccache git
 
 # Clean up APT when done. [Phusion]
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN apt-get update && apt-get install -y git
 
 # Add the build user, update password to build and add to sudo group
 ENV USER build
