@@ -5,8 +5,11 @@ FROM ubuntu:precise
 LABEL maintainer="Rohit Goswami <rohit.1995@mail.ru>"
 LABEL name="platoBot"
 
-# Suppress errors [from https://github.com/phusion/baseimage-docker/issues/58]
+# Suppress debconf errors [from https://github.com/phusion/baseimage-docker/issues/58]
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
+# Suppress policy restart errors [from https://forums.docker.com/t/error-in-docker-image-creation-invoke-rc-d-policy-rc-d-denied-execution-of-restart-start/880]
+RUN echo exit 0 > /usr/sbin/policy-rc.d
 
 # Update apt and get build reqs [from https://github.com/koreader/koreader]
 RUN apt-get update
@@ -16,7 +19,6 @@ gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
 # Additional build deps
 RUN apt-get install -y texinfo libtool m4 \
-libicu-devel libpango1.0-dev libcairo-dev \
 gettext ccache git
 
 # Clean up APT when done. [Phusion]
