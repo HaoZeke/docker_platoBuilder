@@ -56,6 +56,9 @@ RUN sudo chown -R ${USER}:${USER} /home/${USER}
 
 USER ${USER}
 
+# Switch to bash
+SHELL ["/bin/bash", "-c"]
+
 # Setup dummy git config
 RUN git config --global user.name "${USER}" && git config --global user.email "${USER}@localhost"
 
