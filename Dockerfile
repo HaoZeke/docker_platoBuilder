@@ -11,9 +11,16 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 # Suppress policy restart errors [from https://forums.docker.com/t/error-in-docker-image-creation-invoke-rc-d-policy-rc-d-denied-execution-of-restart-start/880]
 RUN echo exit 0 > /usr/sbin/policy-rc.d
 
+# Grab faster mirrors [from https://linuxconfig.org/how-to-select-the-fastest-apt-mirror-on-ubuntu-linux]
+RUN apt-get update && apt-get install --yes wget
+RUN wget http://ftp.au.debian.org/debian/pool/main/n/netselect/netselect_0.3.ds1-26_amd64.deb
+RUN dpkg -i netselect_0.3.ds1-26_amd64.deb
+RUN rm -rf netselect_*
+RUN netselect -s 20 -t 40 $(wget -qO - mirrors.ubuntu.com/mirrors.txt)
+RUN sed -i 's/http:\/\/us.archive.ubuntu.com\/ubuntu\//http:\/\/ubuntu.uberglobalmirror.com\/archive\//' /etc/apt/sources.list
+
 # Update apt and get build reqs [from https://github.com/koreader/koreader]
-RUN apt-get update
-RUN apt-get --yes  install curl git libtool automake cmake ragel \
+RUN apt-get install --yes curl git libtool automake cmake ragel \
 zlib1g-dev libjpeg8-dev libjbig2dec0-dev \
 gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
