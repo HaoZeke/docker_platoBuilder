@@ -15,8 +15,8 @@ zlib1g-dev libjpeg8-dev libjbig2dec0-dev \
 gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
 # Additional build deps
-RUN apt-get install -y texinfo cmake libtool m4 automake \
-libicu-devel libpango1.0-dev libcairo-dev wget luarocks \
+RUN apt-get install -y texinfo libtool m4 \
+libicu-devel libpango1.0-dev libcairo-dev \
 gettext ccache git
 
 # Clean up APT when done. [Phusion]
@@ -29,8 +29,8 @@ RUN useradd --create-home ${USER} && echo "${USER}:${USER}" | chpasswd && adduse
 # Switch to the new user by default and make ~/ the working dir
 WORKDIR /home/${USER}/
 
-ENV \
 # ccache specifics [https://github.com/stucki/docker-lineageos]
+ENV \
     CCACHE_SIZE=50G \
     CCACHE_DIR=$HOME/.ccache \
     USE_CCACHE=1 \
