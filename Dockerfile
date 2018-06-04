@@ -20,13 +20,15 @@ RUN netselect -s 20 -t 40 $(wget -qO - mirrors.ubuntu.com/mirrors.txt)
 RUN sed -i 's/http:\/\/us.archive.ubuntu.com\/ubuntu\//http:\/\/ubuntu.uberglobalmirror.com\/archive\//' /etc/apt/sources.list
 
 # Update apt and get build reqs [from https://github.com/koreader/koreader]
-RUN apt-get install --yes curl git libtool automake cmake ragel \
+RUN apt-get update && apt-get install --yes \
+curl libtool automake cmake ragel \
 zlib1g-dev libjpeg8-dev libjbig2dec0-dev \
 gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
 # Additional build deps
-RUN apt-get install -y texinfo libtool m4 \
-gettext ccache git
+RUN apt-get update && apt-get install -y \
+texinfo libtool m4 \
+gettext ccache git sudo
 
 # Clean up APT when done. [Phusion]
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
