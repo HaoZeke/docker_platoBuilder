@@ -25,7 +25,7 @@ curl libtool automake cmake ragel \
 zlib1g-dev libjpeg8-dev libjbig2dec0-dev \
 gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
 # Additional build deps
-texinfo libtool m4 \
+texinfo libtool m4 build-essential \
 gettext ccache git sudo
 
 # Clean up APT when done. [Phusion]
